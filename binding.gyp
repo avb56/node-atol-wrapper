@@ -31,15 +31,17 @@
           }
         }],
         ["OS=='mac'", {
+          # C++ standard and deployment target come from node-gyp's common.gypi,
+          # which sets them for the Node version being built against (Node 24
+          # headers require C++20). Pinning -std=c++17 / 10.15 here broke the
+          # build on Node 24: "C++20 or later required".
           "xcode_settings": {
             "OTHER_CPLUSPLUSFLAGS": [
-              "-std=c++17",
               "-stdlib=libc++"
             ],
             "OTHER_LDFLAGS": [
               "-stdlib=libc++"
-            ],
-            "MACOSX_DEPLOYMENT_TARGET": "10.15"
+            ]
           }
         }]
       ]
