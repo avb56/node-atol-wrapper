@@ -50,6 +50,27 @@ export interface DeviceInfo {
   serial: string
 }
 
+export interface DriverInfo {
+  /** Is the driver library loaded */
+  loaded: boolean
+  /** File the library was loaded from, null until loaded */
+  path: string | null
+  /** Driver version, e.g. "10.10.8.0"; null until loaded */
+  version: string | null
+}
+
+/**
+ * Load the ATOL DTO 10 driver installed on the machine. Without `path` the
+ * library is searched for as ATOL's own wrappers do it: next to the executable,
+ * in the driver installation directory (Windows registry), in system paths.
+ * `path` is a directory or the library file. Throws if nothing is found.
+ * create() does the same implicitly on first call.
+ */
+export declare function loadLibrary(path?: string): DriverInfo
+
+/** What driver is loaded, without loading anything. */
+export declare function driverInfo(): DriverInfo
+
 export declare class Fptr10 {
   create(): void
   isOpened(): boolean

@@ -11,7 +11,7 @@
 DISABLE_WCAST_FUNCTION_TYPE
 #include <nan.h>
 DISABLE_WCAST_FUNCTION_TYPE_END
-#include "libfptr10.h"
+#include "fptr_api.h"
 
 std::wstring s2ws(const std::string& str);
 std::string ws2s(const std::wstring& wstr);

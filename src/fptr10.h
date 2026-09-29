@@ -8,13 +8,13 @@ DISABLE_WCAST_FUNCTION_TYPE
 DISABLE_WCAST_FUNCTION_TYPE_END
 #include <vector>
 #include "json_worker.h"
-#include "libfptr10.h"
+#include "fptr_api.h"
 
 class JsonWorker;
 
 class Fptr10 : public Nan::ObjectWrap {
 public:
-  libfptr_handle fptr;
+  libfptr_handle fptr = nullptr;
   double x;
   bool jsonAsyncTaskIsRunning = false;
   std::deque<JsonWorker*> taskQueue;
