@@ -15,7 +15,9 @@
         "src/fptr10.cc",
         "src/fptr_api.cc",
         "src/utils.cc",
-        "src/json_worker.cc"
+        "src/json_worker.cc",
+        "src/shtrih_api.cc",
+        "src/shtrih.cc"
       ],
       "conditions":[
         ["OS=='linux'", {

@@ -89,3 +89,26 @@ Node.js обертка для драйвера торгового оборудо
 Пример использования
 ========
 Пример использования обертки можно посмотреть в файле index.js
+
+## Shtrih-M / POScenter driver (fr_drv_ng)
+
+The same module also binds the POScenter driver's "classic" C interface
+(`libclassic_fr_drv_ng.so`, `classic_fr_drv_ng.dll`). As with DTO 10, the
+driver is not linked or shipped — the installed one is loaded at run time:
+
+```js
+const w = require('node-atol-wrapper');
+w.loadShtrihLibrary('/opt/fr_drv_ng');            // directory or file; no argument — exe dir, then system path
+const o = new w.ShtrihClassic();                  // one context per device
+o.call('Connect', { Password: 30, ConnectionURI: 'tcp://192.168.137.111:7778?timeout=15000&protocol=v1' }, [],
+  (err, r) => console.log(r.ResultCode, r.ResultCodeDescription));
+o.call('ExchangeBytes', { Password: 30, BinaryConversion: 1, TransferBytes: '10 1E 00 00 00' }, ['TransferBytes'], cb);
+o.destroy();
+```
+
+`call(method, props, outNames, cb)` sets the properties, runs the method in a
+worker thread and returns `ResultCode`, `ResultCodeDescription` and the listed
+properties. Property names and types are in `src/shtrih_api.inc`, generated from
+the driver's `c_classic_interface.h` by `scripts/gen-shtrih-api.py`. While a
+device is connected, the driver's TS PIoT module (`libmp_ts_piot.so`) serves
+gRPC on port 4042 from this process.

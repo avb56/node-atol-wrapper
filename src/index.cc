@@ -1,6 +1,8 @@
 #include "wcast_disable.h"
 #include "fptr10.h"
 #include "fptr_api.h"
+#include "shtrih.h"
+#include "shtrih_api.h"
 
 // { loaded, path, version } of the driver library currently in use.
 static v8::Local<v8::Object> driverInfoObject() {
@@ -38,8 +40,30 @@ NAN_METHOD(JsDriverInfo) {
   info.GetReturnValue().Set(driverInfoObject());
 }
 
+// loadShtrihLibrary([path]) — the Shtrih-M / POScenter driver (fr_drv_ng),
+// same contract as loadLibrary. Returns { loaded, path }.
+NAN_METHOD(JsLoadShtrihLibrary) {
+  std::string path;
+  if (info.Length() > 0 && !info[0]->IsUndefined() && !info[0]->IsNull()) {
+    if (!info[0]->IsString()) {
+      return Nan::ThrowError(Nan::New("loadShtrihLibrary - expected path to be a string").ToLocalChecked());
+    }
+    path = *Nan::Utf8String(info[0]);
+  }
+  std::string loadedFrom, error;
+  if (!shtrihApiLoad(path, loadedFrom, error)) {
+    return Nan::ThrowError(Nan::New(error).ToLocalChecked());
+  }
+  v8::Local<v8::Object> result = Nan::New<v8::Object>();
+  Nan::Set(result, Nan::New("loaded").ToLocalChecked(), Nan::New(true));
+  Nan::Set(result, Nan::New("path").ToLocalChecked(), Nan::New(loadedFrom).ToLocalChecked());
+  info.GetReturnValue().Set(result);
+}
+
 NAN_MODULE_INIT(InitModule) {
   Fptr10::Init(target);
+  ShtrihClassic::Init(target);
+  Nan::SetMethod(target, "loadShtrihLibrary", JsLoadShtrihLibrary);
   Nan::SetMethod(target, "loadLibrary", JsLoadLibrary);
   Nan::SetMethod(target, "driverInfo", JsDriverInfo);
 }
