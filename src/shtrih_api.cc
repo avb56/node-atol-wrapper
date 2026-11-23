@@ -2,12 +2,14 @@
 
 #include <cstring>
 #include <map>
-#include <mutex>
 #include <vector>
+
+#include "plain_mutex.h"
 
 #if defined(_WIN32)
 #  include <windows.h>
 #else
+#  include <mutex>
 #  include <dlfcn.h>
 #  include <unistd.h>
 #  if defined(__APPLE__)
@@ -17,6 +19,18 @@
 
 #include "shtrih_api.inc"
 
+#if defined(_WIN32)
+PlainMutex::PlainMutex() : impl_(new CRITICAL_SECTION) { InitializeCriticalSection(static_cast<CRITICAL_SECTION *>(impl_)); }
+PlainMutex::~PlainMutex() { DeleteCriticalSection(static_cast<CRITICAL_SECTION *>(impl_)); delete static_cast<CRITICAL_SECTION *>(impl_); }
+void PlainMutex::lock() { EnterCriticalSection(static_cast<CRITICAL_SECTION *>(impl_)); }
+void PlainMutex::unlock() { LeaveCriticalSection(static_cast<CRITICAL_SECTION *>(impl_)); }
+#else
+PlainMutex::PlainMutex() : impl_(new std::mutex) {}
+PlainMutex::~PlainMutex() { delete static_cast<std::mutex *>(impl_); }
+void PlainMutex::lock() { static_cast<std::mutex *>(impl_)->lock(); }
+void PlainMutex::unlock() { static_cast<std::mutex *>(impl_)->unlock(); }
+#endif
+
 namespace {
 
 std::string g_loadedFrom;
@@ -25,7 +39,7 @@ typedef void (*DeinitFn)(ShtrihCtx);
 InitFn g_init = nullptr;
 DeinitFn g_deinit = nullptr;
 std::map<std::string, void *> g_symbols;
-std::mutex g_symbolsMutex;
+PlainMutex g_symbolsMutex;
 
 bool endsWith(const std::string &s, const std::string &tail) {
   return s.size() >= tail.size() && s.compare(s.size() - tail.size(), tail.size(), tail) == 0;
@@ -220,7 +234,7 @@ bool shtrihIsMethod(const std::string &name) {
 
 void *shtrihSymbol(const std::string &name) {
   if (!g_lib) return nullptr;
-  std::lock_guard<std::mutex> lock(g_symbolsMutex);
+  PlainLock lock(g_symbolsMutex);
   auto it = g_symbols.find(name);
   if (it != g_symbols.end()) return it->second;
   void *p = symbol(g_lib, name.c_str());

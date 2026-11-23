@@ -113,7 +113,7 @@ class CallWorker : public Nan::AsyncWorker {
       : Nan::AsyncWorker(callback), obj_(obj), method_(method), in_(in), out_(out) {}
 
   void Execute() override {
-    std::lock_guard<std::mutex> lock(obj_->mutex);
+    PlainLock lock(obj_->mutex);
     if (!obj_->ctx) { SetErrorMessage("ShtrihClassic: context destroyed"); return; }
     void *fn = shtrihSymbol(method_);
     if (!fn) { SetErrorMessage(("ShtrihClassic: the driver has no method " + method_).c_str()); return; }
@@ -144,7 +144,7 @@ class CallWorker : public Nan::AsyncWorker {
 ShtrihClassic::ShtrihClassic() {}
 
 ShtrihClassic::~ShtrihClassic() {
-  std::lock_guard<std::mutex> lock(mutex);
+  PlainLock lock(mutex);
   shtrihDestroy(ctx);
   ctx = nullptr;
 }
@@ -223,7 +223,7 @@ NAN_METHOD(ShtrihClassic::Call) {
 
 NAN_METHOD(ShtrihClassic::Destroy) {
   ShtrihClassic *obj = Nan::ObjectWrap::Unwrap<ShtrihClassic>(info.Holder());
-  std::lock_guard<std::mutex> lock(obj->mutex);
+  PlainLock lock(obj->mutex);
   shtrihDestroy(obj->ctx);
   obj->ctx = nullptr;
 }

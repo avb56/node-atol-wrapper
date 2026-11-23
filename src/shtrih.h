@@ -3,7 +3,6 @@
 
 #include "wcast_disable.h"
 
-#include <mutex>
 #include <string>
 #include <vector>
 DISABLE_WCAST_FUNCTION_TYPE
@@ -11,6 +10,7 @@ DISABLE_WCAST_FUNCTION_TYPE
 DISABLE_WCAST_FUNCTION_TYPE_END
 
 #include "shtrih_api.h"
+#include "plain_mutex.h"
 
 // A value of a driver property: type letter from shtrih_api.inc and the data.
 struct ShtrihValue {
@@ -36,7 +36,7 @@ class ShtrihClassic : public Nan::ObjectWrap {
   static NAN_MODULE_INIT(Init);
 
   ShtrihCtx ctx = nullptr;
-  std::mutex mutex;
+  PlainMutex mutex;
 
  private:
   ShtrihClassic();
